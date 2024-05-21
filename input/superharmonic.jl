@@ -27,7 +27,7 @@ info.Ffreq = 1
 info.Fmult = 0.5
 info.style = 'c'
 info.max_order = 7
-info.max_orderNA = 1
+info.max_orderNA = 6
 info.tol = 1e-1
 
 
