@@ -15,21 +15,21 @@ for e in 1:info.NL
 
   GPsie=B3[e].psidof
   for k in 1:3
-    n=B3[e].nodes[k]   
-    Xe[k,:]=nodes[n].coor                
+    n=B3[e].nodes[k]
+    Xe[k,:]=nodes[n].coor
     GUe[2*k-1:2*k]=nodes[n].dof
   end
   Psi1e=W1[GPsie]
   Psi2e=W2[GPsie]
 
-  B3_EF_quad!(Fe,Xe,Psi1e,Psi2e) 
+  B3_EF_quad!(Fe,Xe,Psi1e,Psi2e)
 
   for i in 1:6
     dofU=GUe[i]
     if dofU>0
       P.R[dofU,pos]+=Fe[i]
     end
-  end    
+  end
 
 end  # loop over NL
 
@@ -45,11 +45,11 @@ U1e=zeros(ComplexF64,3,2)
 U2e=zeros(ComplexF64,3,2)
 FPsie=zeros(ComplexF64,1,1)
 
-for e=1:info.NL                    
+for e=1:info.NL
   GPsie=B3[e].psidof
   for k=1:3
-    n=B3[e].nodes[k]   
-    Xe[k,:]=nodes[n].coor                    
+    n=B3[e].nodes[k]
+    Xe[k,:]=nodes[n].coor
     GUe[2*k-1:k*2]=nodes[n].dof
   end
   fill!(U1e,0.0)
@@ -58,18 +58,17 @@ for e=1:info.NL
     for j in 1:2
       dofU=GUe[2*(i-1)+j]
       if dofU>0
-        U1e[i,j]=W1[dofU] 
-        U2e[i,j]=W2[dofU] 
+        U1e[i,j]=W1[dofU]
+        U2e[i,j]=W2[dofU]
       end
-    end 
-  end  
+    end
+  end
   Psi1e=W1[GPsie]
   Psi2e=W2[GPsie]
 
-  B3_UP_quad!(FPsie,Xe,Psi1e,Psi2e,U1e,U2e) 
+  B3_UP_quad!(FPsie,Xe,Psi1e,Psi2e,U1e,U2e)
 
-#  P.R[GPsie,pos]-=FPsie[1]
-  P.R[GPsie+info.uneq,pos]-=FPsie[1]  # MODDDDDDDDDDDDDDD
+  P.R[GPsie+info.uneq,pos]-=FPsie[1]
 
 end
 
@@ -79,7 +78,7 @@ end
 
 # matrices for electrostatic mixed FP approach: P -> Psi F -> Phi
 function B3_UP_quad!(FPsie::Matrix{ComplexF64},Xe::Matrix{Float64},
-                     Psi1::ComplexF64,Psi2::ComplexF64,U1e::Matrix{ComplexF64},U2e::Matrix{ComplexF64}) 
+                     Psi1::ComplexF64,Psi2::ComplexF64,U1e::Matrix{ComplexF64},U2e::Matrix{ComplexF64})
 
 
 fill!(FPsie,0.0)
@@ -126,34 +125,34 @@ end
 function assembly_cub!(P::Parametrisation,pos::Int64,U1::Vector{ComplexF64},U2::Vector{ComplexF64},U3::Vector{ComplexF64},
                        nodes::Vector{Snode},T6::Vector{ST6})
 
-Xe=zeros(Float64,6,2)
-dofe=zeros(Int64,12)
-Fe=zeros(ComplexF64,12)
-U1e=zeros(ComplexF64,12)
-U2e=zeros(ComplexF64,12)
-U3e=zeros(ComplexF64,12)
+dofe = Vector{Int64}(undef, 12)
+Xe=MMatrix{6, 2, Float64}(zeros(Float64,6,2))
+Fe=MVector{12, ComplexF64}(zeros(ComplexF64,12))
+U1e=MVector{12, ComplexF64}(zeros(ComplexF64,12))
+U2e=MVector{12, ComplexF64}(zeros(ComplexF64,12))
+U3e=MVector{12, ComplexF64}(zeros(ComplexF64,12))
 
-for e in 1:info.NE     
+for e in 1:info.NE
   mat=T6[e].mat
-  if mat>0 
+  if mat>0
     for k in 1:6
-      n=T6[e].nodes[k]   
+      n=T6[e].nodes[k]
       Xe[k,:]=nodes[n].coor
       dofe[(k-1)*2+1:k*2]=nodes[n].dof
     end
 
     for k in 1:12
-     dof=dofe[k] 
+     dof=dofe[k]
      if dof>0
-        U1e[k]=U1[dof] 
-        U2e[k]=U2[dof] 
-        U3e[k]=U3[dof] 
+        U1e[k]=U1[dof]
+        U2e[k]=U2[dof]
+        U3e[k]=U3[dof]
       else
-        U1e[k]=0.0 
-        U2e[k]=0.0 
-        U3e[k]=0.0 
+        U1e[k]=0.0
+        U2e[k]=0.0
+        U3e[k]=0.0
       end
-    end 
+    end
 
     T6_He!(Fe,Xe,U1e,U2e,U3e,material[mat])
 
@@ -162,9 +161,9 @@ for e in 1:info.NE
       if dofU>0
         P.R[dofU,pos]-=Fe[i]
       end
-    end    
+    end
 
-  end   
+  end
 end  # loop over NE
 end
 
@@ -172,33 +171,33 @@ end
 function assembly_cub0!(P::Parametrisation,pos::Int64,U1::Vector{ComplexF64},U2::Vector{ComplexF64},
                         nodes::Vector{Snode},T6::Vector{ST6})
 
-Xe=zeros(Float64,6,2)
-dofe=zeros(Int64,12)
-Fe=zeros(ComplexF64,12)
-U1e=zeros(ComplexF64,12)
-U2e=zeros(ComplexF64,12)
-U3e=zeros(ComplexF64,12)
+dofe = Vector{Int64}(undef, 12)
+Xe=MMatrix{6, 2, Float64}(zeros(Float64,6,2))
+Fe=MVector{12, ComplexF64}(zeros(ComplexF64,12))
+U1e=MVector{12, ComplexF64}(zeros(ComplexF64,12))
+U2e=MVector{12, ComplexF64}(zeros(ComplexF64,12))
+U3e=MVector{12, ComplexF64}(zeros(ComplexF64,12))
 
-for e in 1:info.NE     
+for e in 1:info.NE
   mat=T6[e].mat
-  if mat>0 
+  if mat>0
     for k in 1:6
-      n=T6[e].nodes[k]   
+      n=T6[e].nodes[k]
       Xe[k,:]=nodes[n].coor
       dofe[(k-1)*2+1:k*2]=nodes[n].dof
       U3e[(k-1)*2+1:k*2]=nodes[n].u
     end
 
     for k in 1:12
-     dof=dofe[k] 
+     dof=dofe[k]
      if dof>0
-        U1e[k]=U1[dof] 
-        U2e[k]=U2[dof] 
+        U1e[k]=U1[dof]
+        U2e[k]=U2[dof]
       else
-        U1e[k]=0.0 
-        U2e[k]=0.0 
+        U1e[k]=0.0
+        U2e[k]=0.0
       end
-    end 
+    end
 
     T6_He!(Fe,Xe,U1e,U2e,U3e,material[mat])
 
@@ -207,9 +206,9 @@ for e in 1:info.NE
       if dofU>0
         P.R[dofU,pos]-=3*Fe[i]
       end
-    end    
+    end
 
-  end   
+  end
 end  # loop over NE
 end
 
@@ -218,31 +217,31 @@ end
 function assembly_quad!(P::Parametrisation,pos::Int64,U1::Vector{ComplexF64},U2::Vector{ComplexF64},
                         nodes::Vector{Snode},T6::Vector{ST6})
 
-Xe=zeros(Float64,6,2)
-dofe=zeros(Int64,12)
-Fe=zeros(ComplexF64,12)
-U1e=zeros(ComplexF64,12)
-U2e=zeros(ComplexF64,12)
+dofe = Vector{Int64}(undef, 12)
+Xe=MMatrix{6, 2, Float64}(zeros(Float64,6,2))
+Fe=MVector{12, ComplexF64}(zeros(ComplexF64,12))
+U1e=MVector{12, ComplexF64}(zeros(ComplexF64,12))
+U2e=MVector{12, ComplexF64}(zeros(ComplexF64,12))
 
-for e in 1:info.NE     
+for e in 1:info.NE
   mat=T6[e].mat
-  if mat>0 
+  if mat>0
     for k in 1:6
-      n=T6[e].nodes[k]   
+      n=T6[e].nodes[k]
       Xe[k,:]=nodes[n].coor
       dofe[(k-1)*2+1:k*2]=nodes[n].dof
     end
 
     for k in 1:12
-     dof=dofe[k] 
+     dof=dofe[k]
      if dof>0
-        U1e[k]=U1[dof] 
-        U2e[k]=U2[dof] 
+        U1e[k]=U1[dof]
+        U2e[k]=U2[dof]
       else
-        U1e[k]=0.0 
-        U2e[k]=0.0 
+        U1e[k]=0.0
+        U2e[k]=0.0
       end
-    end 
+    end
 
     T6_Ge!(Fe,Xe,U1e,U2e,material[mat])
 
@@ -251,8 +250,8 @@ for e in 1:info.NE
       if dofU>0
         P.R[dofU,pos]-=Fe[i]
       end
-    end    
-  end   
+    end
+  end
 
 end  # loop over NE
 end
@@ -260,40 +259,40 @@ end
 
 
 
-function T6_He!(Fe::Vector{ComplexF64},Xe::Matrix{Float64},
-                U1e::Vector{ComplexF64},U2e::Vector{ComplexF64},U3e::Vector{ComplexF64},mate::Vector{Float64})
-  
+function T6_He!(Fe::MVector{6 * 2, ComplexF64}, Xe::MMatrix{6, 2, Float64},
+  U1e::MVector{6 * 2, ComplexF64}, U2e::MVector{6 * 2, ComplexF64}, U3e::MVector{6 * 2, ComplexF64}, mate::Vector{Float64})
+
 fill!(Fe,0.0)
-  
-dNda=zeros(Float64,6,2)
-Jac=zeros(Float64,2,2)
-invJac=zeros(Float64,2,2)
-dNdx=zeros(Float64,6,2)
-G=zeros(Float64,2,2,12)
 
-∇U1 = zeros(ComplexF64,2,2)
-∇U2 = zeros(ComplexF64,2,2)
-∇U3 = zeros(ComplexF64,2,2)
+Jac=MMatrix{2, 2, Float64}(zeros(Float64,2,2))
+invJac=MMatrix{2, 2, Float64}(zeros(Float64,2,2))
+dNda=MMatrix{6, 2, Float64}(zeros(Float64,6,2))
+dNdx=MMatrix{6, 2, Float64}(zeros(Float64,6,2))
+G=MArray{Tuple{2, 2, 6 * 2}, Float64}(zeros(Float64,2,2,12))
 
-Bnl1=zeros(ComplexF64,3,12)
-Bnl2=zeros(ComplexF64,3,12)
-Bnl3=zeros(ComplexF64,3,12)
+∇U1 = MMatrix{2, 2, ComplexF64}(zeros(ComplexF64,2,2))
+∇U2 = MMatrix{2, 2, ComplexF64}(zeros(ComplexF64,2,2))
+∇U3 = MMatrix{2, 2, ComplexF64}(zeros(ComplexF64,2,2))
+temp = MMatrix{2, 2, ComplexF64}(zeros(ComplexF64,2,2))
+
+Bnl1=MMatrix{2 + 1, 6 * 2, ComplexF64}(zeros(ComplexF64,3,12))
+Bnl2=MMatrix{2 + 1, 6 * 2, ComplexF64}(zeros(ComplexF64,3,12))
+Bnl3=MMatrix{2 + 1, 6 * 2, ComplexF64}(zeros(ComplexF64,3,12))
 
 mY,nu=mate[1:2]
 D=mY/((1+nu)*(1-2*nu))*[1-nu nu 0;
                        nu 1-nu 0;
-                       0 0 (1-2*nu)/2] 
-                                            
+                       0 0 (1-2*nu)/2]
+
 qr=quadrature_points(Val(:TRI6gp))
-  
+
 for (w,a) in qr
 
   dNda!(dNda,a,Val(:TRI6n))
   Jac[:] = Xe'*dNda
   J =  Jac[1,1]*Jac[2,2]-Jac[2,1]*Jac[1,2]
-  invJac[:] =[Jac[2,2] -Jac[1,2]; 
-             -Jac[2,1] Jac[1,1]]/J
-  dNdx[:] = dNda*invJac   
+  invJac[:] = MMatrix{2,2}(Jac[2,2], -Jac[1,2], -Jac[2,1], Jac[1,1])/J
+  dNdx[:] = dNda*invJac
 
   for i in 1:2, j in 1:2, m in 1:6
     pos=i+(m-1)*2
@@ -306,11 +305,11 @@ for (w,a) in qr
   end
 
   temp=0.5*(transpose(∇U1)*∇U2+transpose(∇U2)*∇U1)
-  S12=D*[temp[1,1],temp[2,2],2*temp[1,2]]
+  S12=D*MVector{3}([temp[1,1],temp[2,2],2*temp[1,2]])
   temp=0.5*(transpose(∇U2)*∇U3+transpose(∇U3)*∇U2)
-  S23=D*[temp[1,1],temp[2,2],2*temp[1,2]]
+  S23=D*MVector{3}([temp[1,1],temp[2,2],2*temp[1,2]])
   temp=0.5*(transpose(∇U1)*∇U3+transpose(∇U3)*∇U1)
-  S13=D*[temp[1,1],temp[2,2],2*temp[1,2]]
+  S13=D*MVector{3}([temp[1,1],temp[2,2],2*temp[1,2]])
 
   fill!(Bnl1,0.0)
   fill!(Bnl2,0.0)
@@ -337,38 +336,38 @@ end
 
 
 
-function T6_Ge!(Fe::Vector{ComplexF64},Xe::Matrix{Float64},U1e::Vector{ComplexF64},U2e::Vector{ComplexF64},mate::Vector{Float64})
-  
+function T6_Ge!(Fe::MVector{6 * 2, ComplexF64},Xe::MMatrix{6, 2, Float64},U1e::MVector{6 * 2, ComplexF64},U2e::MVector{6 * 2, ComplexF64},mate::Vector{Float64})
+
 fill!(Fe,0.0)
-  
-dNda=zeros(Float64,6,2)
-Jac=zeros(Float64,2,2)
-invJac=zeros(Float64,2,2)
-dNdx=zeros(Float64,6,2)
-G=zeros(Float64,2,2,12)
 
-∇U1 = zeros(ComplexF64,2,2)
-∇U2 = zeros(ComplexF64,2,2)
+Jac=MMatrix{2, 2, Float64}(zeros(Float64,2,2))
+invJac=MMatrix{2, 2, Float64}(zeros(Float64,2,2))
+dNda=MMatrix{6, 2, Float64}(zeros(Float64,6,2))
+dNdx=MMatrix{6, 2, Float64}(zeros(Float64,6,2))
+G=MArray{Tuple{2, 2, 6 * 2}, Float64}(zeros(Float64,2,2,12))
 
-B=zeros(Float64,3,12)
-Bnl1=zeros(ComplexF64,3,12)
-Bnl2=zeros(ComplexF64,3,12)
+∇U1 = MMatrix{2, 2, ComplexF64}(zeros(ComplexF64,2,2))
+∇U2 = MMatrix{2, 2, ComplexF64}(zeros(ComplexF64,2,2))
+temp = MMatrix{2, 2, ComplexF64}(zeros(ComplexF64,2,2))
+
+B=MMatrix{2 + 1, 6 * 2, Float64}(zeros(Float64,3,12))
+Bnl1=MMatrix{2 + 1, 6 * 2, ComplexF64}(zeros(ComplexF64,3,12))
+Bnl2=MMatrix{2 + 1, 6 * 2, ComplexF64}(zeros(ComplexF64,3,12))
 
 mY,nu=mate[1:2]
 D=mY/((1+nu)*(1-2*nu))*[1-nu nu 0;
                        nu 1-nu 0;
-                       0 0 (1-2*nu)/2] 
-                                            
+                       0 0 (1-2*nu)/2]
+
 qr=quadrature_points(Val(:TRI6gp))
-  
+
 for (w,a) in qr
 
   dNda!(dNda,a,Val(:TRI6n))
   Jac[:]=Xe'*dNda
   J=Jac[1,1]*Jac[2,2]-Jac[2,1]*Jac[1,2]
-  invJac[:]=[Jac[2,2] -Jac[1,2]; 
-             -Jac[2,1] Jac[1,1]]/J
-  dNdx[:,:]=dNda*invJac   
+  invJac[:]=MMatrix{2,2}(Jac[2,2], -Jac[1,2],-Jac[2,1], Jac[1,1])/J
+  dNdx[:,:]=dNda*invJac
 
   for i in 1:2, j in 1:2, m in 1:6
     pos=i+(m-1)*2
@@ -380,11 +379,11 @@ for (w,a) in qr
   end
 
   temp=0.5*(transpose(∇U1)+∇U1)
-  S1=D*[temp[1,1],temp[2,2],2*temp[1,2]]
+  S1=D*MVector{3}([temp[1,1],temp[2,2],2*temp[1,2]])
   temp=0.5*(transpose(∇U2)+∇U2)
-  S2=D*[temp[1,1],temp[2,2],2*temp[1,2]]
+  S2=D*MVector{3}([temp[1,1],temp[2,2],2*temp[1,2]])
   temp=0.5*(transpose(∇U1)*∇U2+transpose(∇U2)*∇U1)
-  S12=D*[temp[1,1],temp[2,2],2*temp[1,2]]
+  S12=D*MVector{3}([temp[1,1],temp[2,2],2*temp[1,2]])
 
   B[1,:]=G[1,1,:]
   B[2,:]=G[2,2,:]
@@ -400,7 +399,7 @@ for (w,a) in qr
     Bnl2[2,:]+=G[m,2,:]*∇U2[m,2]
     Bnl2[3,:]+=G[m,1,:]*∇U2[m,2]+G[m,2,:]*∇U2[m,1]
   end
-  
+
   Fe[:] += 0.5*(transpose(B)*S12+transpose(Bnl1)*S2+transpose(Bnl2)*S1)*w*J
 
 end

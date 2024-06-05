@@ -7,6 +7,7 @@ using ExtendableSparse
 using Pardiso
 using MAT
 using MATLAB
+using StaticArrays
 
 include("./source/EM2D_defs.jl")
 include("./source/EM2D_globalprocedure.jl")

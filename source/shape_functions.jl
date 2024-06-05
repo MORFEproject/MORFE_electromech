@@ -1,5 +1,5 @@
 
-function dNda!(dNda::Array{Float64},gp::Array{Float64},::Val{:TRI6n})
+function dNda!(dNda::MMatrix{6, 2, Float64},gp::Array{Float64},::Val{:TRI6n})
   a1,a2,a3 = gp
   dNda[1,1] = 4*a1-1
   dNda[1,2] = 0.0
@@ -18,6 +18,6 @@ end
 
 function N!(NL::Array{Float64},gp::Array{Float64},::Val{:TRI6n})
   a1,a2,a3 = gp
-  NL[:]=[a1*(2*a1-1), a2*(2*a2-1), a3*(2*a3-1), 4*a1*a2, 4*a2*a3, 4*a1*a3]  
+  NL[:]=[a1*(2*a1-1), a2*(2*a2-1), a3*(2*a3-1), 4*a1*a2, 4*a2*a3, 4*a1*a3]
   return nothing
 end
