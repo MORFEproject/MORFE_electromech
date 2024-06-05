@@ -1,28 +1,28 @@
 
-function analysis(nodes::Vector{Snode},T6::Vector{ST6},B3::Vector{SB3}) 
+function analysis(nodes::Vector{Snode},T6::Vector{ST6},B3::Vector{SB3})
 
 uneq=0
-# equation numbering 
-for e in 1:info.NE           
+# equation numbering
+for e in 1:info.NE
   mat=T6[e].mat
-  if mat>0 
+  if mat>0
     for k in 1:6
-      n=T6[e].nodes[k]   
+      n=T6[e].nodes[k]
       for d in 1:2
-        if nodes[n].dof[d]==0   
-          uneq=uneq+1             
-          nodes[n].dof[d]=uneq   
-        end  
+        if nodes[n].dof[d]==0
+          uneq=uneq+1
+          nodes[n].dof[d]=uneq
+        end
       end
     end
-  end   
+  end
 end
 
 psineq=0    # constant Psi
-for e in 1:info.NL                      
+for e in 1:info.NL
   psineq+=1
-  B3[e].psidof=uneq+psineq  
-end 
+  B3[e].psidof=uneq+psineq
+end
 
 neq=uneq+psineq
 info.uneq=uneq
@@ -46,7 +46,7 @@ global K   # to make it visible out of the while loop
 # faster and safer to reallocate at every iter, as the number of nozero coeffs may vary from iter to iter
 K=SparseMatrixLNK(neq,neq)
 C=SparseMatrixLNK(uneq,uneq)
-if iter >0 
+if iter >0
   fill!(F,0.0)
 end
 
@@ -63,11 +63,11 @@ Ue=zeros(Float64,12)
 Fe=zeros(Float64,12)
 Ke= zeros(Float64,(12,12))
 
-for e in 1:info.NE     
+for e in 1:info.NE
   mat=T6[e].mat
-  if mat>0 
+  if mat>0
     for k in 1:6
-      n=T6[e].nodes[k]   
+      n=T6[e].nodes[k]
       Xe[k,:]=nodes[n].coor
       dofe[(k-1)*2+1:k*2]=nodes[n].dof
       Ue[(k-1)*2+1:k*2]=nodes[n].u
@@ -81,7 +81,7 @@ for e in 1:info.NE
         for j = 1:12
 #          F[dofi]-=Ke[i,j]*Ue[j]
           dofj=dofe[j]
-          if dofj>0 
+          if dofj>0
             K[dofi,dofj]+=Ke[i,j]
             C[dofi,dofj]+=Ke[i,j]
           end
@@ -89,7 +89,7 @@ for e in 1:info.NE
       end
     end
   end
-end  
+end
 
 ###################################
 # ES forces
@@ -103,24 +103,24 @@ Ue=zeros(Float64,3,2)
 Fe=zeros(Float64,6,1)
 Ke=zeros(Float64,6,1)
 
-for e in 1:info.NL                     
+for e in 1:info.NL
   dofPsi=B3[e].psidof
-  Psi=B3[e].psi 
-  for k in 1:3                                 
+  Psi=B3[e].psi
+  for k in 1:3
     n=B3[e].nodes[k]
-    Xe[k,:]=nodes[n].coor              
+    Xe[k,:]=nodes[n].coor
     dofUe[(k-1)*2+1:k*2]=nodes[n].dof
   end
 
-  B3_F!(Fe,Ke,Xe,Psi) 
+  B3_F!(Fe,Ke,Xe,Psi)
 
   for i in 1:6
     dofUi=dofUe[i]
     if dofUi>0
       F[dofUi]+=Fe[i]
-      K[dofUi,dofPsi]+=Ke[i] 
+      K[dofUi,dofPsi]+=Ke[i]
     end
-  end    
+  end
 
 end
 
@@ -136,30 +136,30 @@ KPUe=zeros(Float64,6,1)
 KPPe=zeros(Float64,1,1)
 FPe=zeros(Float64,1,1)
 
-for e=1:info.NL                    
+for e=1:info.NL
   dofPsi=B3[e].psidof
   Psi=B3[e].psi
   for k=1:3
-    n=B3[e].nodes[k]   
-    Xe[k,:]=nodes[n].coor                    
+    n=B3[e].nodes[k]
+    Xe[k,:]=nodes[n].coor
     Ue[k,:]=nodes[n].u
     dofUe[2*k-1:k*2]=nodes[n].dof
   end
 
-  B3_UP!(KPUe,KPPe,FPe,Xe,Ue,Psi) 
-  
+  B3_UP!(KPUe,KPPe,FPe,Xe,Ue,Psi)
+
   F[dofPsi]+=FPe[1]
   K[dofPsi,dofPsi]+=KPPe[1]
   if iter==1
     F0[dofPsi]+=FPe[1]/VDC   # for VAC in DPIM later
-  end  
+  end
   for j in 1:6
     dofU=dofUe[j]
     if dofU>0
-      K[dofPsi,dofU]+=KPUe[j] 
-    end  
-  end  
-  
+      K[dofPsi,dofU]+=KPUe[j]
+    end
+  end
+
 end
 
 # Solution phase
@@ -171,18 +171,18 @@ ps = MKLPardisoSolver()
 solve!(ps,sol,K,F)
 
 # fill dofs
-for n in 1:info.NN 
-  for d in 1:2       
+for n in 1:info.NN
+  for d in 1:2
     dofU=nodes[n].dof[d]
-    if dofU>0                      
-      nodes[n].u[d]+=sol[dofU]      
-    end 
+    if dofU>0
+      nodes[n].u[d]+=sol[dofU]
+    end
   end
 end
- 
-for e=1:info.NL            
+
+for e=1:info.NL
   dofPsi=B3[e].psidof
-  B3[e].psi+=sol[dofPsi]     
+  B3[e].psi+=sol[dofPsi]
 end
 
 residuum=norm(sol)
@@ -201,11 +201,11 @@ Xe=zeros(Float64,(6,2))
 dofe=zeros(Int64,12,1)
 Me= zeros(Float64,(12,12))
 
-for e in 1:info.NE     
+for e in 1:info.NE
   mat=T6[e].mat
-  if mat>0 
+  if mat>0
     for k in 1:6
-      n=T6[e].nodes[k]   
+      n=T6[e].nodes[k]
       Xe[k,:]=nodes[n].coor
       dofe[(k-1)*2+1:k*2]=nodes[n].dof
     end
@@ -215,7 +215,7 @@ for e in 1:info.NE
       if dofi>0
         for j = 1:12
           dofj=dofe[j]
-          if dofj>0 
+          if dofj>0
             M[dofi,dofj]+=Me[i,j]
           end
         end
@@ -231,12 +231,12 @@ C=info.beta*C+info.alpha*M
 # GMSH output of static solution
 ##############################
 
-outgmsh(info.NN,nodes,T6,B3,"_u0")
+#outgmsh(info.NN,nodes,T6,B3,"_u0")
 #  mycommand = `../gmsh.exe post.msh`
 #  run(mycommand)
 
 return C,K,M,F0
 
-end   
+end
 
 
